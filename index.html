@@ -106,7 +106,7 @@ function render(){
  document.getElementById('breadcrumb').textContent=home?'Prosjektet':overview?'Prosjektoversikt':roomPage?'Huset  /  '+(floor==='first'?'1. etasje':'Underetasje')+'  /  '+state.rooms[selected].name:(floor==='first'?'1. etasje':'Underetasje');
  if(floorPage){
   document.getElementById('floorTitle').textContent=floor==='first'?'1. etasje':'Underetasje';
-  document.getElementById('plan').src=floor==='first'?'https://raw.githubusercontent.com/hansnlandmark/Husprosjektet/main/IMG_5370.jpeg':'https://raw.githubusercontent.com/hansnlandmark/Husprosjektet/main/IMG_5371.jpeg';
+  document.getElementById('plan').src=floor==='first'?'https://raw.githubusercontent.com/hansnlandmark/Husprosjektet/main/IMG_5371.jpeg':'https://raw.githubusercontent.com/hansnlandmark/Husprosjektet/main/IMG_5370.jpeg';
   document.getElementById('rooms').innerHTML=roomIds[floor].map(id=>{let r=state.rooms[id];return `<button class="room" data-room="${id}"><strong>${esc(r.name)}</strong><small>${r.products.length} produktvalg</small></button>`}).join('');
  }
  if(roomPage)renderRoom();
