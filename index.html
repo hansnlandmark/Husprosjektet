@@ -144,7 +144,8 @@ document.getElementById('overviewBtn').onclick=()=>{page='overview';render()};
 document.getElementById('backBtn').onclick=()=>{closeEditor();page=page==='room'?'floor':'home';render()};
 function openRoom(id){if(!state.rooms[id])return;selected=id;page='room';render()}
 document.getElementById('rooms').addEventListener('click',e=>{let b=e.target.closest('[data-room]');if(b)openRoom(b.dataset.room)});
-document.getElementById('planOverlay').addEventListener('click',e=>{let p=e.target.closest('[data-room]');if(p)openRoom(p.dataset.room)});\ndocument.getElementById('planOverlay').addEventListener('pointerup',e=>{let p=e.target.closest('[data-room]');if(p)openRoom(p.dataset.room)});
+document.getElementById('planOverlay').addEventListener('click',e=>{let p=e.target.closest('[data-room]');if(p)openRoom(p.dataset.room)});
+document.getElementById('planOverlay').addEventListener('pointerup',e=>{let p=e.target.closest('[data-room]');if(p)openRoom(p.dataset.room)});
 document.getElementById('planOverlay').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-room]')){e.preventDefault();openRoom(e.target.dataset.room)}});
 document.getElementById('addBtn').onclick=()=>openEditor();
 document.getElementById('saveBtn').onclick=()=>{let name=document.getElementById('pName').value.trim();if(!name){alert('Skriv inn produkt eller kategori.');return}let p={name,model:document.getElementById('pModel').value.trim(),detail:document.getElementById('pDetail').value.trim(),status:document.getElementById('pStatus').value,price:Number(document.getElementById('pPrice').value)||0,qty:Math.max(1,Number(document.getElementById('pQty').value)||1),url:document.getElementById('pUrl').value.trim(),image:document.getElementById('pImage').value.trim(),note:document.getElementById('pNote').value.trim()};let a=state.rooms[selected].products;if(editIndex<0)a.push(p);else a[editIndex]=p;persist();closeEditor();render()};
