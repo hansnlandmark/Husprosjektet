@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f4f0e8"><title>Husprosjektet</title>
+<meta name="theme-color" content="#f4f0e8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>Husprosjektet</title>
 <style>
 :root{--bg:#f5f2eb;--card:#fffdf8;--ink:#292a25;--muted:#77786e;--line:#dedbd1;--accent:#526b59;--accent2:#e7ede5;--danger:#9b443b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -91,7 +91,7 @@ const initial={
  }
 };
 let state=load(),floor='first',selected='stue',page='home',editIndex=-1;
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.rooms){if(v.rooms.bod2&&['Bod 2','Bod2'].includes(v.rooms.bod2.name))v.rooms.bod2.name='Hybel';Object.values(v.rooms).forEach(r=>{if(!Array.isArray(r.products))r.products=[];if(typeof r.notes!=='string')r.notes='';if(typeof r.image!=='string'||!r.image){if(r.name==='Hybelbad')r.image='https://i.postimg.cc/wMrKvrWC/5C2394FD-FCD5-4A55-B57E-39577D572EB0.png';else r.image=''}r.products.forEach(p=>{if(typeof p.image!=='string')p.image=''});});return v}}catch(e){}const fresh=structuredClone(initial);fresh.rooms.bod2.name='Hybel';return fresh}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.rooms){if(v.rooms.bod2&&['Bod 2','Bod2'].includes(v.rooms.bod2.name))v.rooms.bod2.name='Hybel';Object.values(v.rooms).forEach(r=>{if(!Array.isArray(r.products))r.products=[];if(typeof r.notes!=='string')r.notes='';if(typeof r.image!=='string'||!r.image){if(r.name==='Hybelbad')r.image='https://i.postimg.cc/wMrKvrWC/5C2394FD-FCD5-4A55-B57E-39577D572EB0.png';else r.image=''}r.products.forEach(p=>{if(typeof p.image!=='string')p.image=''});});return v}}catch(e){}const fresh=JSON.parse(JSON.stringify(initial));fresh.rooms.bod2.name='Hybel';return fresh}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));document.getElementById('saveState').textContent='✓ Lagret automatisk på denne enheten.'}catch(e){document.getElementById('saveState').textContent='Kunne ikke lagre lokalt. Eksporter en sikkerhetskopi.'}}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 const roomIds={first:['stue','kjokken','entre','wc','platting'],basement:['bod1','bod2','trapp','gang','vask','hybelbad']};
@@ -139,7 +139,7 @@ function renderRoom(){
 function openEditor(i=-1){editIndex=i;let p=i<0?{name:'',model:'',detail:'',status:'Vurderes',price:'',qty:1,url:'',note:''}:state.rooms[selected].products[i];document.getElementById('editorTitle').textContent=i<0?'Nytt produkt':'Rediger produkt';[['pName','name'],['pModel','model'],['pDetail','detail'],['pStatus','status'],['pPrice','price'],['pQty','qty'],['pUrl','url'],['pImage','image'],['pNote','note']].forEach(([id,k])=>document.getElementById(id).value=p[k]??'');document.getElementById('editor').classList.remove('hidden');document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})}
 function closeEditor(){document.getElementById('editor').classList.add('hidden');editIndex=-1}
 function renderOverview(){let all=Object.values(state.rooms).flatMap(r=>r.products.map(p=>({...p,room:r.name})));let chosen=all.filter(p=>['Valgt','Bestilt','Levert','Montert'].includes(p.status)).length;let total=all.reduce((s,p)=>s+(Number(p.price)||0)*(Number(p.qty)||1),0);document.getElementById('stats').innerHTML=`<div class="stat"><strong>${all.length}</strong><span class="muted">Produktvalg</span></div><div class="stat"><strong>${chosen}</strong><span class="muted">Valgt / bestilt</span></div><div class="stat"><strong>${total.toLocaleString('nb-NO')} kr</strong><span class="muted">Registrert sum</span></div>`;document.getElementById('allProducts').innerHTML=all.map(p=>`<div class="product"><div class="body"><b>${esc(p.name)}</b><div class="muted">${esc(p.room)} · ${esc([p.model,p.detail].filter(Boolean).join(' · '))}</div><span class="pill">${esc(p.status)}</span></div></div>`).join('')||'<p class="muted">Ingen produkter ennå.</p>'}
-document.getElementById('homeView').addEventListener('click',e=>{let b=e.target.closest('[data-floor]');if(b){floor=b.dataset.floor;page='floor';closeEditor();render()}});
+document.querySelectorAll('#homeView button[data-floor]').forEach(b=>{b.addEventListener('click',()=>{floor=b.getAttribute('data-floor');page='floor';closeEditor();render()})});
 document.getElementById('overviewBtn').onclick=()=>{page='overview';render()};
 document.getElementById('backBtn').onclick=()=>{closeEditor();page=page==='room'?'floor':'home';render()};
 function openRoom(id){if(!state.rooms[id])return;selected=id;page='room';render()}
@@ -154,7 +154,7 @@ document.getElementById('roomNotes').onchange=e=>{state.rooms[selected].notes=e.
 document.getElementById('roomImageUrl').onchange=e=>{state.rooms[selected].image=e.target.value.trim();persist();renderRoom()};
 document.getElementById('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='husprosjektet-sikkerhetskopi.json';a.click();URL.revokeObjectURL(a.href)};
 document.getElementById('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let v=JSON.parse(await f.text());if(!v.rooms)throw Error();state=v;persist();render();alert('Sikkerhetskopien er importert.')}catch(err){alert('Filen kunne ikke leses som en Husprosjektet-sikkerhetskopi.')}e.target.value=''};
-document.getElementById('resetBtn').onclick=()=>{if(confirm('Dette erstatter alle lokale endringer med startvalgene. Har du eksportert sikkerhetskopi?')){state=structuredClone(initial);persist();render()}};
+document.getElementById('resetBtn').onclick=()=>{if(confirm('Dette erstatter alle lokale endringer med startvalgene. Har du eksportert sikkerhetskopi?')){state=JSON.parse(JSON.stringify(initial));persist();render()}};
 render();persist();
 </script>
 </body></html>
