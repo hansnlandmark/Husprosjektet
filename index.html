@@ -2,7 +2,13 @@
 <html lang="no">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f4f0e8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>Husprosjektet</title>
+<meta name="theme-color" content="#f4f0e8">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACjUlEQVR42u3dvU0DQRCAUTxyDZCQkRLQCxUQktAAIkI0QEJIBfRCQGgyZMlUQUAK/hH2MbPzvtjB7e7T+hZ89my1XBxJPxWmQHAIDsEhOASH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BIcEhOASH4BAcgkNwCA7BITgkOASH4BAch+r64c4kwPGrDD7gWLdn8PHdzLcJrqHwdHtv5yDDLQgcu699Zx9BBh9w/Gm9e/oIMvhwWtnbAvc5wgQZtpDuOPa7ok18BBl89MVxuFUc3keQwUe708rEyzbkESbIsIU0wvFf6zSejyCDjxY4MqzNSD6CDD5GPq2kXYzqR5ggwxYyJo78s1/aR5DhOkfDUWvGi/oIMlzzIKeVAU6JhY4wQYZRlMcx0l8eq4wlzKYRFcYx6gdq8o8rzKDR1TuttHqIKOcRJsgw3ko4ej6YmnDUYY6MvQYO37eUagbCvPCR+rSCRc4jTJBhC0mKg4zM8xNk8JHunmPjmF8en/sIuLy5Snj/EWRkaON4/2X/mHrn2GaQ3WRsv39MvIUEGYX2j4m3kEglQ6lmMt2/7I9PTjsv/OfqI8/F+EkNwSE4BIfgEByCQ3BolOa1Lvf1/W2n11+cnVtjO4fgEByCQ3AIDsEhOASHKRAcgkNwaILm3Qa8zYND6+vzZI2dQ3AIDvW95/DhHTuH4BAcgkNwCA4JDsEhOASH4BAcgkNwCA7BITgkOASH4BAcgkNwCA7BITgEhwSH4BAcgkNwCA7BsVupfsy9+djDHBl1sbeVbj5yjne2Wi68ucoNqeAQHIJDcAgOwSE4BIfgkOAQHIJDcAgOwSE4BIfgEBwSHIJDcAgOwSE4BIfgEByCQ3BIcAgO7asv8z7Q19U2AP8AAAAASUVORK5CYII=">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Husprosjektet">
+<meta name="mobile-web-app-capable" content="yes"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>Husprosjektet</title>
 <style>
 :root{--bg:#f5f2eb;--card:#fffdf8;--ink:#292a25;--muted:#77786e;--line:#dedbd1;--accent:#526b59;--accent2:#e7ede5;--danger:#9b443b}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -156,5 +162,6 @@ document.getElementById('exportBtn').onclick=()=>{let blob=new Blob([JSON.string
 document.getElementById('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let v=JSON.parse(await f.text());if(!v.rooms)throw Error();state=v;persist();render();alert('Sikkerhetskopien er importert.')}catch(err){alert('Filen kunne ikke leses som en Husprosjektet-sikkerhetskopi.')}e.target.value=''};
 document.getElementById('resetBtn').onclick=()=>{if(confirm('Dette erstatter alle lokale endringer med startvalgene. Har du eksportert sikkerhetskopi?')){state=JSON.parse(JSON.stringify(initial));persist();render()}};
 render();persist();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Service worker kunne ikke registreres',err)));}
 </script>
 </body></html>
