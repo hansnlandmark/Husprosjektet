@@ -23,10 +23,18 @@ footer{padding:8px 0 24px;color:var(--muted);font-size:11px;text-align:center}
 <body>
 <header><h1>Husprosjektet</h1><p>Rom · materialer · produktvalg · budsjett</p></header>
 <main>
- <section class="tabs" id="tabs">
-  <button class="active" data-view="first">1. etasje</button><button data-view="basement">Kjeller</button><button data-view="overview">Prosjektoversikt</button>
+ <section class="row" style="justify-content:space-between">
+  <button id="backBtn" class="hidden">← Tilbake</button><span id="breadcrumb" class="muted">Prosjektet</span>
  </section>
- <section id="floorView" class="card">
+ <section id="homeView" class="card">
+  <h2>Huset</h2><p class="muted">Velg etasje for å åpne plantegningen og rommene.</p>
+  <div class="rooms">
+   <button class="room" data-floor="first"><strong>1. etasje</strong><small>Plantegning og rom</small></button>
+   <button class="room" data-floor="basement"><strong>Underetasje</strong><small>Plantegning og rom</small></button>
+  </div>
+  <button id="overviewBtn" style="margin-top:12px">Prosjektoversikt</button>
+ </section>
+ <section id="floorView" class="card hidden">
   <div class="row" style="justify-content:space-between"><h2 id="floorTitle">1. etasje</h2><span class="muted">Velg rom under</span></div>
   <img id="plan" class="plan" alt="Plantegning">
   <p class="muted">Velg rom i listen. Produktvalg og notater knyttes til rommet.</p>
@@ -53,7 +61,7 @@ footer{padding:8px 0 24px;color:var(--muted);font-size:11px;text-align:center}
   <div class="actions" style="margin-top:12px"><button class="primary" id="saveBtn">Lagre produkt</button><button id="cancelBtn">Avbryt</button></div>
  </section>
  <section id="overview" class="card hidden"><h2>Prosjektoversikt</h2><div class="statgrid" id="stats"></div><h3 style="margin-top:18px">Alle produktvalg</h3><div id="allProducts" class="products"></div></section>
- <section class="card">
+ <section class="card" id="dataCard">
   <h3>Data og sikkerhetskopi</h3><p class="muted">Denne versjonen lagrer automatisk i nettleseren på enheten du bruker. Ta jevnlig sikkerhetskopi for å flytte data til en annen enhet.</p>
   <div class="actions"><button id="exportBtn">Eksporter sikkerhetskopi</button><label class="button" style="margin:0">Importer sikkerhetskopi<input id="importFile" type="file" accept="application/json" hidden></label><button id="resetBtn">Tilbakestill demo</button></div>
   <p id="saveState" class="muted" aria-live="polite">Lagring aktivert på denne enheten.</p>
@@ -82,19 +90,27 @@ const initial={
   ],notes:''}
  }
 };
-let state=load(),floor='first',selected='stue',editIndex=-1;
+let state=load(),floor='first',selected='stue',page='home',editIndex=-1;
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.rooms){Object.values(v.rooms).forEach(r=>{if(!Array.isArray(r.products))r.products=[];if(typeof r.notes!=='string')r.notes='';if(typeof r.image!=='string'||!r.image){if(r.name==='Hybelbad')r.image='https://i.postimg.cc/wMrKvrWC/5C2394FD-FCD5-4A55-B57E-39577D572EB0.png';else r.image=''}r.products.forEach(p=>{if(typeof p.image!=='string')p.image=''});});return v}}catch(e){}return structuredClone(initial)}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));document.getElementById('saveState').textContent='✓ Lagret automatisk på denne enheten.'}catch(e){document.getElementById('saveState').textContent='Kunne ikke lagre lokalt. Eksporter en sikkerhetskopi.'}}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 const roomIds={first:['stue','kjokken','entre','wc','platting'],basement:['bod1','bod2','trapp','gang','vask','hybelbad']};
 function render(){
- document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===floor));
- const overview=floor==='overview';document.getElementById('floorView').classList.toggle('hidden',overview);document.getElementById('roomCard').classList.toggle('hidden',overview);document.getElementById('overview').classList.toggle('hidden',!overview);
- if(overview){renderOverview();return}
- document.getElementById('floorTitle').textContent=floor==='first'?'1. etasje':'Kjeller';
- document.getElementById('plan').src=floor==='first'?'https://i.postimg.cc/y8DnVtKS/IMG-5363.png':'https://i.postimg.cc/85Rt2vGF/IMG-5364.png';
- document.getElementById('rooms').innerHTML=roomIds[floor].map(id=>{let r=state.rooms[id];return `<button class="room ${id===selected?'active':''}" data-room="${id}"><strong>${esc(r.name)}</strong><small>${r.products.length} produktvalg</small></button>`}).join('');
- renderRoom();
+ const home=page==='home',floorPage=page==='floor',roomPage=page==='room',overview=page==='overview';
+ document.getElementById('homeView').classList.toggle('hidden',!home);
+ document.getElementById('floorView').classList.toggle('hidden',!floorPage);
+ document.getElementById('roomCard').classList.toggle('hidden',!roomPage);
+ document.getElementById('overview').classList.toggle('hidden',!overview);
+ document.getElementById('dataCard').classList.toggle('hidden',!home);
+ document.getElementById('backBtn').classList.toggle('hidden',home);
+ document.getElementById('breadcrumb').textContent=home?'Prosjektet':overview?'Prosjektoversikt':roomPage?'Huset  /  '+(floor==='first'?'1. etasje':'Underetasje')+'  /  '+state.rooms[selected].name:(floor==='first'?'1. etasje':'Underetasje');
+ if(floorPage){
+  document.getElementById('floorTitle').textContent=floor==='first'?'1. etasje':'Underetasje';
+  document.getElementById('plan').src=floor==='first'?'https://i.postimg.cc/y8DnVtKS/IMG-5363.png':'https://i.postimg.cc/85Rt2vGF/IMG-5364.png';
+  document.getElementById('rooms').innerHTML=roomIds[floor].map(id=>{let r=state.rooms[id];return `<button class="room" data-room="${id}"><strong>${esc(r.name)}</strong><small>${r.products.length} produktvalg</small></button>`}).join('');
+ }
+ if(roomPage)renderRoom();
+ if(overview)renderOverview();
 }
 function renderRoom(){
  let r=state.rooms[selected];document.getElementById('roomTitle').textContent=r.name;document.getElementById('roomSub').textContent=r.products.length+' registrerte produktvalg';
@@ -105,8 +121,10 @@ function renderRoom(){
 function openEditor(i=-1){editIndex=i;let p=i<0?{name:'',model:'',detail:'',status:'Vurderes',price:'',qty:1,url:'',note:''}:state.rooms[selected].products[i];document.getElementById('editorTitle').textContent=i<0?'Nytt produkt':'Rediger produkt';[['pName','name'],['pModel','model'],['pDetail','detail'],['pStatus','status'],['pPrice','price'],['pQty','qty'],['pUrl','url'],['pImage','image'],['pNote','note']].forEach(([id,k])=>document.getElementById(id).value=p[k]??'');document.getElementById('editor').classList.remove('hidden');document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})}
 function closeEditor(){document.getElementById('editor').classList.add('hidden');editIndex=-1}
 function renderOverview(){let all=Object.values(state.rooms).flatMap(r=>r.products.map(p=>({...p,room:r.name})));let chosen=all.filter(p=>['Valgt','Bestilt','Levert','Montert'].includes(p.status)).length;let total=all.reduce((s,p)=>s+(Number(p.price)||0)*(Number(p.qty)||1),0);document.getElementById('stats').innerHTML=`<div class="stat"><strong>${all.length}</strong><span class="muted">Produktvalg</span></div><div class="stat"><strong>${chosen}</strong><span class="muted">Valgt / bestilt</span></div><div class="stat"><strong>${total.toLocaleString('nb-NO')} kr</strong><span class="muted">Registrert sum</span></div>`;document.getElementById('allProducts').innerHTML=all.map(p=>`<div class="product"><div class="body"><b>${esc(p.name)}</b><div class="muted">${esc(p.room)} · ${esc([p.model,p.detail].filter(Boolean).join(' · '))}</div><span class="pill">${esc(p.status)}</span></div></div>`).join('')||'<p class="muted">Ingen produkter ennå.</p>'}
-document.getElementById('tabs').addEventListener('click',e=>{let b=e.target.closest('[data-view]');if(!b)return;floor=b.dataset.view;if(floor!=='overview')selected=roomIds[floor][0];closeEditor();render()});
-document.getElementById('rooms').addEventListener('click',e=>{let b=e.target.closest('[data-room]');if(!b)return;selected=b.dataset.room;render()});
+document.getElementById('homeView').addEventListener('click',e=>{let b=e.target.closest('[data-floor]');if(b){floor=b.dataset.floor;page='floor';closeEditor();render()}});
+document.getElementById('overviewBtn').onclick=()=>{page='overview';render()};
+document.getElementById('backBtn').onclick=()=>{closeEditor();page=page==='room'?'floor':'home';render()};
+document.getElementById('rooms').addEventListener('click',e=>{let b=e.target.closest('[data-room]');if(!b)return;selected=b.dataset.room;page='room';render()});
 document.getElementById('addBtn').onclick=()=>openEditor();
 document.getElementById('saveBtn').onclick=()=>{let name=document.getElementById('pName').value.trim();if(!name){alert('Skriv inn produkt eller kategori.');return}let p={name,model:document.getElementById('pModel').value.trim(),detail:document.getElementById('pDetail').value.trim(),status:document.getElementById('pStatus').value,price:Number(document.getElementById('pPrice').value)||0,qty:Math.max(1,Number(document.getElementById('pQty').value)||1),url:document.getElementById('pUrl').value.trim(),image:document.getElementById('pImage').value.trim(),note:document.getElementById('pNote').value.trim()};let a=state.rooms[selected].products;if(editIndex<0)a.push(p);else a[editIndex]=p;persist();closeEditor();render()};
 document.getElementById('cancelBtn').onclick=closeEditor;
